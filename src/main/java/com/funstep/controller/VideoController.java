@@ -17,6 +17,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -26,6 +27,8 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 @RequestMapping("/video")
 public class VideoController {
+	@Value("${innerMiddleIp}")
+	private String ip;
 	
 	@RequestMapping("/uploadVideo")
 	public String uploadVideo1(@RequestParam("file") MultipartFile videoFile,
@@ -37,10 +40,15 @@ public class VideoController {
 								@DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss") Date endTime,
 								HttpServletRequest req) {
 		//内网项目的Ip地址与上传视频的接口地址
-		String url="http://localhost:8082//mapping/uploadVideo";
+		String url="http://"+ip+":8082//mapping/uploadVideo";
+		
+		File parentFile=new File("D:"+File.separator+"upload");
+		if(!parentFile.exists()){//如果文件夹不存在
+			parentFile.mkdir();//创建文件夹
+		}
 		
 		String fileOriginalName=videoFile.getOriginalFilename();
-		File fileName=new File("D:\\upload\\"+fileOriginalName);
+		File fileName=new File("D:"+File.separator+"upload"+File.separator+fileOriginalName);
 		try {
 			//将外网读取到的视频保存到中间服务器上
 			videoFile.transferTo(fileName);
@@ -48,7 +56,8 @@ public class VideoController {
 			e1.printStackTrace();
 		} 
 		
-		String filePath="D:\\upload\\"+fileOriginalName;//视频地址
+		
+		String filePath="D:"+File.separator+"upload"+File.separator+fileOriginalName;//视频地址
 		
 		String bzId=req.getParameter("bzId")==null?"1":req.getParameter("bzId");//+1
 		String bzjsId=req.getParameter("bzjsId")==null?"1":req.getParameter("bzjsId");
