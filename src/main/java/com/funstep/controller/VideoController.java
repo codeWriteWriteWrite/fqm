@@ -24,6 +24,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.funstep.config.Config;
+import com.funstep.config.GetConfig;
+
 /**
  * 外部视频搬运工（外部→中间→内部）
  * @author fqmle
@@ -34,9 +37,6 @@ import org.springframework.web.multipart.MultipartFile;
 @RequestMapping("/video")
 public class VideoController {
 	
-	@Value("${innerIp}")
-	private String innerIp;
-	
 	@RequestMapping("/uploadVideo")
 	public String uploadVideo1(@RequestParam("file") MultipartFile videoFile,
 								@RequestParam("taskId")String taskId,
@@ -46,6 +46,14 @@ public class VideoController {
 								@DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss") Date startTime,
 								@DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss") Date endTime,
 								HttpServletRequest req) {
+		
+		String innerIp="";
+		try {
+			innerIp = GetConfig.getConfig(Config.class).innerIp;
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
+		
 		//内网项目的Ip地址与上传视频的接口地址
 		String url="http://"+innerIp+":8082//mapping/uploadVideo";
 		

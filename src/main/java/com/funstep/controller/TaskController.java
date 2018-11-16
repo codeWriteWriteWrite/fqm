@@ -19,6 +19,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import com.funstep.config.Config;
+import com.funstep.config.GetConfig;
+
 import net.sf.json.JSONArray;
 
 /**
@@ -31,17 +34,27 @@ import net.sf.json.JSONArray;
 @Component
 public class TaskController {
 
-	@Value("${outerIp}")
-	private String outerIp;
-	
-	@Value("${innerIp}")
-	private String innerIp;
-	
 	private static int n=1;
 	
-//	@RequestMapping("/getTasks")
+	//	@RequestMapping("/getTasks")
 	
 	public void getTask() {
+		String innerIp="";
+		try {
+			innerIp = GetConfig.getConfig(Config.class).innerIp;
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
+		
+		String outerIp="";
+		try {
+			outerIp = GetConfig.getConfig(Config.class).outerIp;
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
+		
+		
+		
 		// 请求内网地址
 		String urlPath = "http://"+innerIp+":8082//worksy/list";
 

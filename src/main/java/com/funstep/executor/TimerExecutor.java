@@ -1,6 +1,7 @@
 package com.funstep.executor;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 
 import org.apache.http.HttpEntity;
@@ -15,34 +16,48 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import com.funstep.config.Config;
+import com.funstep.config.GetConfig;
+
 @Component
 public class TimerExecutor {
 
 	@Autowired
 	private AsynTask asynTask;
-	
-	@Value("${outerIp}")
-	private String outerIp;
-	
+		
 	private static int n=1;
 	
 	//fixRate是定时时间，单位为毫秒
-	@Scheduled(fixedRate=10000)
+	@Scheduled(fixedRate=60000)
 	public void timerExecute() {
 		System.out.println(Thread.currentThread()+","+System.currentTimeMillis());
-		//异步调用从内网将工作任务票数据插入外网相应数据库中
-		asynTask.asynTask();
+		//调用从内网将工作任务票数据插入外网相应数据库中
+		//asynTask.asynTask();
 		//从外网上传视频到内网中
-		//getVideos();
-		System.out.println("搬运次数："+(++n));
+		getVideos();
+		System.out.println("搬运次数："+(n++));
 	}
 	
 	public void getVideos() {
+		String outerip="";
+		try {
+			outerip=GetConfig.getConfig(Config.class).outerIp;
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		} 
+		
+		String localIp="";
+		try {
+			localIp=GetConfig.getConfig(Config.class).localIp;
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		} 
+		
 		
 		//中间服务器调用外网的上传视频接口，
-		String url="http://"+outerIp+":8082//test/getOutVideos";
+		String url="http://"+outerip+":8082//test/getOutVideos";
 		try {
-			upload(url);
+			upload(url,localIp);
 			
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -50,7 +65,7 @@ public class TimerExecutor {
 	
 }
 
-public  void upload(String url) throws Exception{
+public  void upload(String url,String localIp) throws Exception{
 	
     CloseableHttpClient httpClient = HttpClientBuilder.create().build();
     CloseableHttpResponse httpResponse = null;
@@ -58,6 +73,8 @@ public  void upload(String url) throws Exception{
     HttpPost httpPost = new HttpPost(url);
     httpPost.setConfig(requestConfig);
     MultipartEntityBuilder multipartEntityBuilder = MultipartEntityBuilder.create();
+    
+    multipartEntityBuilder.addTextBody("localIp",localIp);
     
     HttpEntity httpEntity = multipartEntityBuilder.build();
     httpPost.setEntity(httpEntity);

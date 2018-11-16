@@ -1,0 +1,5 @@
+<com.funstep.config.Config>
+  <localIp>172.16.100.61</localIp>
+  <outerIp>172.16.100.104</outerIp>
+  <innerIp>172.16.100.61</innerIp>
+</com.funstep.config.Config>
