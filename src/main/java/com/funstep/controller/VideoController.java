@@ -24,11 +24,18 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+/**
+ * 外部视频搬运工（外部→中间→内部）
+ * @author fqmle
+ *
+ */
+
 @RestController
 @RequestMapping("/video")
 public class VideoController {
-	@Value("${innerMiddleIp}")
-	private String ip;
+	
+	@Value("${innerIp}")
+	private String innerIp;
 	
 	@RequestMapping("/uploadVideo")
 	public String uploadVideo1(@RequestParam("file") MultipartFile videoFile,
@@ -40,7 +47,7 @@ public class VideoController {
 								@DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss") Date endTime,
 								HttpServletRequest req) {
 		//内网项目的Ip地址与上传视频的接口地址
-		String url="http://"+ip+":8082//mapping/uploadVideo";
+		String url="http://"+innerIp+":8082//mapping/uploadVideo";
 		
 		File parentFile=new File("D:"+File.separator+"upload");
 		if(!parentFile.exists()){//如果文件夹不存在
@@ -138,7 +145,9 @@ public class VideoController {
 	        while(!((str = reader.readLine())==null)) {
 	            buffer.append(str);
 	        }
-	             
+	        if(file.exists()) {
+	        	file.delete();
+	        }    
 	        System.out.println(buffer.toString());
 	    }
 	         

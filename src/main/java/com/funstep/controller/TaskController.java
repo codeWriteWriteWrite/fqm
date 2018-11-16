@@ -16,39 +16,46 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 
 import net.sf.json.JSONArray;
 
-@RestController
-@RequestMapping("/task")
+/**
+ * 内部工作票号搬运工（内部→中间箭头外部）
+ * @author fqmle
+ *
+ */
+//@RestController
+//@RequestMapping("/task")
+@Component
 public class TaskController {
 
-	@Value("${outMiddleIp}")
-	private String outMiddleIp;
+	@Value("${outerIp}")
+	private String outerIp;
 	
-	@Value("${innerMiddleIp}")
-	private String innerMiddleIp;
+	@Value("${innerIp}")
+	private String innerIp;
 	
-	private static int n;
+	private static int n=1;
 	
-	@RequestMapping("/getTasks")
-	public Object getTask() {
+//	@RequestMapping("/getTasks")
+	
+	public void getTask() {
 		// 请求内网地址
-		String urlPath = "http://"+innerMiddleIp+":8082//worksy/list";
+		String urlPath = "http://"+innerIp+":8082//worksy/list";
 
 		try {
 			// 请求内容
 			String content = "enterprise_id=" + URLEncoder.encode("-156", "utf-8") + "&page="
-					+n+ "&limit=" +10;
-			n++;
+					+n+ "&limit=" +100;
+			//n++;
 			// 调用接口，获取任务数据
 			ByteArrayOutputStream baos = getHttpInfo(urlPath, content);
 			System.out.println(baos.toString());
 
 			// 请求外网数据
-			urlPath = "http://"+outMiddleIp+":8082//worksy/insertToTest";
+			urlPath = "http://"+outerIp+":8082//worksy/insertToTest";
 			// 向外网数据库插入数据
 			insertData(urlPath, baos);
 
@@ -56,7 +63,6 @@ public class TaskController {
 			e.printStackTrace();
 		}
 
-		return 1;
 	}
 
 	public void insertData(String urlPath, ByteArrayOutputStream baos)
@@ -85,6 +91,7 @@ public class TaskController {
 	 */
 	public String getContent(Map<String, Object> map) throws UnsupportedEncodingException {
 
+		String rwdbh=(String) map.get("rwdbh");
 		Object rwid = map.get("id");
 		String bzbmmc = (String) map.get("plandept");
 		String slbzmc = (String) map.get("bz_name");
@@ -96,7 +103,7 @@ public class TaskController {
 		String tdfw = (String) map.get("powercut");
 
 		String GZDWMC = (String) map.get("工作单位");
-		String PH = map.get("编号").equals(0) ? "" : ((String) map.get("编号"));
+		String PH = map.get("编号").equals(0) ? "" : String.valueOf(map.get("编号"));
 		String GZBZCY = (String) map.get("班组成员");
 		String GZDDMS = (String) map.get("地点描述");
 		String GZNR = (String) map.get("工作内容");
@@ -105,13 +112,14 @@ public class TaskController {
 		String startTime = transferTime(starttime);
 		String endTime = transferTime(endtime);
 		
-		System.out.println("rwid:" + rwid + ",bzbmmc:" + bzbmmc + ",slbzmc:" + slbzmc + ",rwnr:" + rwnr
+		System.out.println("rwdbh"+rwdbh+"rwid:" + rwid + ",bzbmmc:" + bzbmmc + ",slbzmc:" + slbzmc + ",rwnr:" + rwnr
 				+ ",rwaprmc:" + rwaprmc + ",dzorxl:" + dzorxl + ",startTime:" + startTime 
 				+ ",endTime:" + endTime + ",tdfw:"+ tdfw + ",GZDWMC:" + GZDWMC + ",PH:" + PH 
 				+ ",GZBZCY:" + GZBZCY + ",GZDDMS:" + GZDDMS + ",GZNR:"+ GZNR + ",VIDEO:" + VIDEO);
 
 		//需要插入数据库的信息
 		String content = "rwid=" + rwid 
+							+ "&rwdbh=" + URLEncoder.encode(rwdbh, "utf-8") 
 				           + "&bzbmmc=" + URLEncoder.encode(bzbmmc, "utf-8") 
 				           + "&slbzmc="+ URLEncoder.encode(slbzmc, "utf-8") 
 				           + "&rwaprmc=" + URLEncoder.encode(rwaprmc, "utf-8")
